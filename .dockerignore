@@ -1,0 +1,30 @@
+# Git metadata
+.git
+.gitignore
+
+# Python virtual environments
+.venv
+venv
+env
+
+# Python cache and test artifacts
+__pycache__
+*.py[cod]
+.pytest_cache
+.coverage
+htmlcov
+
+# Local environment and secret files
+.env
+.env.*
+
+# Editor and operating system files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Terraform working files and state
+**/.terraform
+*.tfstate
+*.tfstate.*
