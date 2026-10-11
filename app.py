@@ -15,8 +15,11 @@ r = redis.Redis(
     host=REDIS_HOST,
     port=REDIS_PORT,
     password=REDIS_PASSWORD,
-    decode_responses=False,
+    decode_responses=True,
+    socket_connect_timeout=3,
+    socket_timeout=3,
 )
+
 
 @app.middleware("http")
 async def log_request(request: Request, call_next):
@@ -24,25 +27,35 @@ async def log_request(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
 @app.get("/")
 def root():
     return {"message": "FastAPI is working"}
 
+
 @app.post("/cache")
 def store_value(key: str, value: str):
-    r.set(key, value)
+    try:
+        r.set(key, value)
+    except redis.exceptions.RedisError:
+        raise HTTPException(status_code=503, detail="Redis is unavailable")
+
     return {"message": f"Stored key '{key}'"}
+
 
 @app.get("/cache")
 def get_value(key: str):
-    value = r.get(key)
+    try:
+        value = r.get(key)
+    except redis.exceptions.RedisError:
+        raise HTTPException(status_code=503, detail="Redis is unavailable")
 
     if value is None:
         raise HTTPException(status_code=404, detail="Key not found")
 
-    return {"Key": key, "value": value.decode()}
+    return {"Key": key, "value": value}
+
 
 @app.get("/secret-test")
 def show_secret():
-    return {"password": os.getenv("REDIS_PASSWORD")}
-
+    return {"redis_password_configured": bool(REDIS_PASSWORD)}
