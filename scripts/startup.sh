@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,8 +20,12 @@ log() {
 }
 
 fail() {
-    printf '\nERROR: %s\n' "$1" >&2
+    printf '\n${RED}ERROR: %s${NC}\n' "$1" >&2
     exit 1
+}
+
+success() {
+    printf '${GREEN}%s${NC}\n' "$1"
 }
 
 k() {
@@ -35,7 +40,7 @@ diagnostics() {
 
     trap - ERR
 
-    printf '\nStartup failed with exit code %s.\n' "${exit_code}" >&2
+    printf '\n${RED}Startup failed with exit code %s.${NC}\n' "${exit_code}" >&2
     printf 'Current Kubernetes diagnostics:\n' >&2
 
     k get pods -o wide || true
@@ -56,11 +61,13 @@ for command in docker kind kubectl; do
     command -v "${command}" >/dev/null 2>&1 \
         || fail "Required command not found: ${command}"
 done
+success "All required commands are available"
 
 log "Checking Docker"
 
 docker info >/dev/null 2>&1 \
     || fail "Docker is unavailable. Start Docker Desktop and check WSL integration."
+success "Docker is available"
 
 log "Checking project files"
 
@@ -81,6 +88,7 @@ for file in "${required_files[@]}"; do
     [[ -f "${PROJECT_DIR}/${file}" ]] \
         || fail "Missing file: ${PROJECT_DIR}/${file}"
 done
+success "All required project files are present"
 
 log "Checking the kind cluster"
 
@@ -100,6 +108,7 @@ done <<< "${clusters}"
 
 kubectl config get-contexts "${CONTEXT}" >/dev/null 2>&1 \
     || fail "kubectl context '${CONTEXT}' was not found."
+success "Kind cluster and context verified"
 
 log "Checking the Stage 4 NodePort mapping"
 
@@ -111,6 +120,7 @@ port_mapping="$(
 
 [[ "${port_mapping}" == "127.0.0.1:8080" ]] \
     || fail "Expected NodePort mapping 127.0.0.1:8080 -> 30080/tcp. Check Stage 4 kind configuration."
+success "NodePort mapping is correct"
 
 trap diagnostics ERR
 
@@ -121,22 +131,26 @@ k wait \
     nodes \
     --all \
     --timeout=180s
+success "Kubernetes nodes are ready"
 
 log "Checking the storage class"
 
 k get storageclass standard >/dev/null
+success "Storage class verified"
 
 log "Building ${IMAGE}"
 
 docker build \
     --tag "${IMAGE}" \
     "${PROJECT_DIR}"
+success "Docker image built successfully"
 
 log "Loading the application image into kind"
 
 kind load docker-image \
     "${IMAGE}" \
     --name "${CLUSTER_NAME}"
+success "Image loaded into kind successfully"
 
 log "Applying Redis configuration, storage, and Service"
 
@@ -169,6 +183,7 @@ k exec deployment/redis -- \
         IFS= read -r reply
         [[ "${reply}" == "PONG" ]]
     }
+success "Redis is running and authenticated"
 
 log "Applying the FastAPI Deployment and Service"
 
@@ -186,6 +201,7 @@ k rollout restart deployment/python-api
 k rollout status \
     deployment/python-api \
     --timeout=180s
+success "FastAPI deployment rolled out successfully"
 
 log "Deployment status"
 
@@ -194,7 +210,7 @@ k get pods
 k get services
 k get pvc
 
-printf '\nStartup completed successfully.\n'
+printf '\n${GREEN}Startup completed successfully.${NC}\n'
 printf 'FastAPI: http://localhost:8080\n'
 printf 'API docs: http://localhost:8080/docs\n'
 printf 'Run tests: %s/scripts/test.sh\n' "${PROJECT_DIR}"
