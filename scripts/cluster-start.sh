@@ -157,33 +157,6 @@ LABEL_VALUE="$(
 success "Node label is present"
 
 # -------------------------------------------
-# Check the FastAPI image
-# -------------------------------------------
-
-log "Checking the FastAPI image"
-
-if ! docker image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
-
-    echo "Building missing Docker image..."
-
-    docker build -t "$IMAGE_NAME" .
-    success "Docker image built successfully"
-else
-    success "Docker image already exists"
-fi
-
-# -------------------------------------------
-# Load image into kind
-# -------------------------------------------
-
-log "Loading the image into kind"
-
-kind load docker-image \
-    "$IMAGE_NAME" \
-    --name "$CLUSTER_NAME"
-success "Image loaded into kind successfully"
-
-# -------------------------------------------
 # Display results
 # -------------------------------------------
 
