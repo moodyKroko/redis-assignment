@@ -110,18 +110,6 @@ kubectl config get-contexts "${CONTEXT}" >/dev/null 2>&1 \
     || fail "kubectl context '${CONTEXT}' was not found."
 success "Kind cluster and context verified"
 
-log "Checking the Stage 4 NodePort mapping"
-
-port_mapping="$(
-    docker inspect \
-        --format '{{with index .HostConfig.PortBindings "30080/tcp"}}{{range .}}{{.HostIp}}:{{.HostPort}}{{println}}{{end}}{{end}}' \
-        "${CLUSTER_NAME}-control-plane"
-)"
-
-[[ "${port_mapping}" == "127.0.0.1:8080" ]] \
-    || fail "Expected NodePort mapping 127.0.0.1:8080 -> 30080/tcp. Check Stage 4 kind configuration."
-success "NodePort mapping is correct"
-
 trap diagnostics ERR
 
 log "Waiting for Kubernetes nodes"
@@ -190,6 +178,11 @@ log "Applying the FastAPI Deployment and Service"
 k apply -f "${PROJECT_DIR}/k8s/deployment.yaml"
 k apply -f "${PROJECT_DIR}/k8s/service.yaml"
 
+service_type="$(k get service python-api -o jsonpath='{.spec.type}')"
+
+[[ "${service_type}" == "ClusterIP" ]] \
+    || fail "Expected python-api Service type ClusterIP. Check k8s/service.yaml."
+
 k rollout status \
     deployment/python-api \
     --timeout=180s
@@ -211,6 +204,12 @@ k get services
 k get pvc
 
 printf "\n${GREEN}Startup completed successfully.${NC}\n"
-printf 'FastAPI: http://localhost:8080\n'
-printf 'API docs: http://localhost:8080/docs\n'
-printf 'Run tests: %s/scripts/test.sh\n' "${PROJECT_DIR}"
+printf '\nIn Terminal A, start port-forwarding:\n'
+printf 'kubectl --context=%s --namespace=%s port-forward --address=127.0.0.1 service/python-api 18080:80\n' \
+    "${CONTEXT}" "${NAMESPACE}"
+
+printf '\nIn Terminal B, run the tests:\n'
+printf 'BASE_URL=http://localhost:18080 "%s/scripts/test.sh"\n' \
+    "${PROJECT_DIR}"
+
+printf '\nAPI docs: http://localhost:18080/docs\n'
