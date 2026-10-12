@@ -20,12 +20,12 @@ log() {
 }
 
 fail() {
-    printf '\n${RED}ERROR: %s${NC}\n' "$1" >&2
+    printf "\n${RED}ERROR: %s${NC}\n" "$1" >&2
     exit 1
 }
 
 success() {
-    printf '${GREEN}%s${NC}\n' "$1"
+    printf "${GREEN}%s${NC}\n" "$1"
 }
 
 k() {
@@ -40,7 +40,7 @@ diagnostics() {
 
     trap - ERR
 
-    printf '\n${RED}Startup failed with exit code %s.${NC}\n' "${exit_code}" >&2
+    printf "\n${RED}Startup failed with exit code %s.${NC}\n" "${exit_code}" >&2
     printf 'Current Kubernetes diagnostics:\n' >&2
 
     k get pods -o wide || true
@@ -210,7 +210,7 @@ k get pods
 k get services
 k get pvc
 
-printf '\n${GREEN}Startup completed successfully.${NC}\n'
+printf "\n${GREEN}Startup completed successfully.${NC}\n"
 printf 'FastAPI: http://localhost:8080\n'
 printf 'API docs: http://localhost:8080/docs\n'
 printf 'Run tests: %s/scripts/test.sh\n' "${PROJECT_DIR}"
