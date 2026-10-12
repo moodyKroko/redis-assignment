@@ -53,7 +53,7 @@ def get_value(key: str):
     if value is None:
         raise HTTPException(status_code=404, detail="Key not found")
 
-    return {"Key": key, "value": value}
+    return {"key": key, "value": value}
 
 
 @app.get("/secret-test")
