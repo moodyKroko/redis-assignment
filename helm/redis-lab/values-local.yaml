@@ -1,0 +1,33 @@
+api:
+  replicas: 1
+
+  image:
+    repository: python-api
+    tag: latest
+    pullPolicy: Never
+
+  containerPort: 8000
+
+  service:
+    port: 80
+
+redis:
+  image:
+    repository: redis
+    tag: "7"
+    pullPolicy: IfNotPresent
+
+  port: 6379
+
+  password: "redis-123"
+
+  persistence:
+    storageClassName: standard
+    size: 1Gi
+
+ingress:
+  enabled: true
+  className: nginx
+  host: localhost
+  path: /api(/|$)(.*)
+  rewriteTarget: /$2
