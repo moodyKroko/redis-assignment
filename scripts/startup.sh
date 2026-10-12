@@ -8,7 +8,7 @@ PROJECT_DIR="$(cd -- "${SCRIPT_DIR}/.." && pwd)"
 CLUSTER_NAME="redis-lab"
 CONTEXT="kind-${CLUSTER_NAME}"
 NAMESPACE="default"
-IMAGE="python-api:stage4"
+IMAGE="python-api:latest"
 
 # ANSI color codes
 GREEN="\033[0;32m"
