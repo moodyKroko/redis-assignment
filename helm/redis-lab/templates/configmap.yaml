@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+
+metadata:
+  name: redis-cm
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "redis-app.labels" . | nindent 4 }}
+
+data:
+  REDIS_HOST: "redis"
+  REDIS_PORT: {{ .Values.redis.port | quote }}

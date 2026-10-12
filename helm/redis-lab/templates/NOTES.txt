@@ -1,0 +1,24 @@
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+
+{{ if .Values.ingress.enabled }}
+Application URL:
+  http://{{ .Values.ingress.host }}/api/
+
+From the assignment project directory, run:
+  BASE_URL=http://{{ .Values.ingress.host }}/api ./scripts/test.sh
+
+The Ingress controller must already be installed and reachable.
+{{ else }}
+Ingress is disabled.
+
+In Terminal A:
+  kubectl --context=kind-redis-lab --namespace={{ .Release.Namespace }} port-forward --address=127.0.0.1 service/python-api 18080:80
+
+In Terminal B:
+  BASE_URL=http://localhost:18080 ./scripts/test.sh
+{{ end }}
+
+The Redis PVC has helm.sh/resource-policy: keep.
+It is retained on Helm uninstall, but deleting the kind cluster
+still removes its local storage.
