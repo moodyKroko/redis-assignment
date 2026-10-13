@@ -1,0 +1,32 @@
+{{- if .Values.mesh.enabled }}
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+
+metadata:
+  name: fastapi-mtls
+  namespace: {{ .Release.Namespace | quote }}
+
+spec:
+  selector:
+    matchLabels:
+      app: python-api
+
+  mtls:
+    mode: {{ .Values.mesh.mtlsMode | quote }}
+
+---
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+
+metadata:
+  name: redis-mtls
+  namespace: {{ .Release.Namespace | quote }}
+
+spec:
+  selector:
+    matchLabels:
+      app: redis
+
+  mtls:
+    mode: {{ .Values.mesh.mtlsMode | quote }}
+{{- end }}

@@ -1,0 +1,30 @@
+{{- if .Values.mesh.enabled }}
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+
+metadata:
+  name: fastapi-mtls-client
+  namespace: {{ .Release.Namespace | quote }}
+
+spec:
+  host: python-api.{{ .Release.Namespace }}.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+---
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+
+metadata:
+  name: redis-mtls-client
+  namespace: {{ .Release.Namespace | quote }}
+
+spec:
+  host: redis.{{ .Release.Namespace }}.svc.cluster.local
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+{{- end }}
