@@ -1,5 +1,5 @@
 api:
-  replicas: 2
+  replicas: 1
 
   image:
     repository: python-api
