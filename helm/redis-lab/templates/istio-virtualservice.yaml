@@ -8,7 +8,7 @@ metadata:
 
 spec:
   hosts:
-    - "*"
+    - localhost
 
   gateways:
     - fastapi-gateway
