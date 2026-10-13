@@ -1,6 +1,6 @@
 ingress:
-  enabled: true
+  enabled: false
 
 mesh:
   enabled: true
-  mtlsMode: PERMISSIVE
+  mtlsMode: STRICT
